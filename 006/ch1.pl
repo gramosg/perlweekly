@@ -3,25 +3,30 @@
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 sub compact {
-	my @ins = split(/,/, shift);
-	my @ons = @ins ? $ins[0] : ();
-	@ins = @ins[1..$#ins];
-	foreach my $n (@ins) {
-		# Ending of the last interval
-		my ($last) = $ons[-1] =~ /(\d+)$/;
-		# Decide whether to expand the previous interval or begin a new one
-		if (int($last) == $n-1) {
-			# Set new range (2 -> 2-3; 3-4 -> 3-5)
-			$ons[-1] =~ s/^(\d+).*$/$1-$n/;
+	my @ns = split(/,/, shift);
+	my $from = my $to = shift @ns; # The first interval is the first number
+	my @intervals;
+
+	# Store the current interval ($from, $to) and advance to the next one
+	my $save = sub {
+		push(@intervals, $from == $to ? $from : "$from-$to");
+		$from = $to = shift;
+	};
+
+	# Iterate over the numbers, expanding the last interval or starting a new one
+	foreach my $n (@ns) {
+		if ($to == $n-1) {
+			$to = $n;
 		} else {
-			# New interval (number)
-			push(@ons, $n);
+			&$save($n);
 		}
 	}
-	return join(",", @ons);
+
+	# Store the last interval (except for empty input)
+	&$save if defined $to;
+
+	return join(",", @intervals);
 }
 
 foreach (@ARGV) {

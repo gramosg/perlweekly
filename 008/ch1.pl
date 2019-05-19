@@ -3,8 +3,26 @@
 use strict;
 use warnings;
 
-my @mersennes = (2, 3, 5, 7, 13);
+my @primes;
 
-foreach my $p (@mersennes) {
-    print 2**($p - 1) * (2**$p - 1), "\n";
+sub perfect {
+    my $sum = 0;
+    my $n = shift;
+    my $candidate = 1;
+    while ($candidate*2 <= $n) {
+        $sum += $candidate if $n % $candidate == 0;
+        $candidate++;
+    }
+
+    return $n == $sum;
+}
+
+my $n = 1;
+my $perfects = 0;
+while ($perfects < 5) {
+    if (perfect($n)) {
+        print $n, "\n";
+        $perfects++;
+    }
+    $n++;
 }

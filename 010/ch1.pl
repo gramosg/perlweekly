@@ -31,6 +31,7 @@ if ($ARGV[0] eq "--test") {
 # roman -> arabic
 sub decode {
 	my @roman = split //, shift;
+
 	# Decimal value of each roman symbol
 	my %dec = (
 		M => 1000,
@@ -65,6 +66,7 @@ sub encode {
 	die "ERROR: Unable to encode numbers bigger than 9999" if $_[0] > 9999;
 
 	my @arabic = split //, shift;
+
 	my @symbols = ("I", "V", "X", "L", "C", "D", "M");
 	my @roman; # Return value (roman symbols)
 

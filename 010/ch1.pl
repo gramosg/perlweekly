@@ -3,23 +3,26 @@
 use strict;
 use warnings;
 
+# CLI usage
 sub usage {
-	print "$0 {-e LATIN | -d ROMAN}\n";
+	print "$0 {-e ARABIC | -d ROMAN | --test}\n";
 	exit shift;
 }
-
-usage -1 unless @ARGV == 2 || $ARGV[0] eq "--test";
-
-if ($ARGV[0] eq "-d") {
-	print decode($ARGV[1]), "\n";
-} elsif ($ARGV[0] eq "-e") {
-	print encode($ARGV[1]), "\n";
-} elsif ($ARGV[0] eq "--test") {
+usage -1 unless @ARGV > 0;
+if ($ARGV[0] eq "--test") {
 	test();
 } else {
-	usage -1;
+	usage -1 unless @ARGV == 2;
+	if ($ARGV[0] eq "-d") {
+		print decode($ARGV[1]), "\n";
+	} elsif ($ARGV[0] eq "-e") {
+		print encode($ARGV[1]), "\n";
+	} else {
+		usage -1;
+	}
 }
 
+# roman -> arabic
 sub decode {
 	my @roman = split //, shift;
 	# Decimal value of each roman symbol
@@ -32,7 +35,7 @@ sub decode {
 		V =>    5,
 		I =>    1,
 	);
-	my $latin = 0; # Return value
+	my $arabic = 0; # Return value
 
 	# Iterate over roman symbols
 	for (my $i = 0; $i < @roman; $i++) {
@@ -42,25 +45,26 @@ sub decode {
 
 		# Sub current value if next symbol is bigger; add it otherwise
 		if (defined $nextsym && $val < $dec{$nextsym}) {
-			$latin -= $val;
+			$arabic -= $val;
 		} else {
-			$latin += $val;
+			$arabic += $val;
 		}
 	}
 
-	return $latin;
+	return $arabic;
 }
 
+# arabic -> roman
 sub encode {
 	die "ERROR: Unable to encode numbers bigger than 9999" if $_[0] > 9999;
 
-	my @latin = split //, shift;
+	my @arabic = split //, shift;
 	my @symbols = ("I", "V", "X", "L", "C", "D", "M");
 	my @roman; # Return value (roman symbols)
 
-	# Iterate latin digits from right to left (upward units)
-	for (my $i = $#latin; $i >= 0; $i--) {
-		my $digit = $latin[$i];
+	# Iterate arabic digits from right to left (upward units)
+	for (my $i = $#arabic; $i >= 0; $i--) {
+		my $digit = $arabic[$i];
 
 		# Roman symbols corresponding to (1-5-10) given the current base
 		my ($one, $five, $ten) = @symbols;
@@ -95,12 +99,12 @@ sub encode {
 }
 
 # Property:
-#   forall (x : Latin). x == decode(encode(x))
+#   forall (x : Arabic). x == decode(encode(x))
 sub test {
-    foreach my $i (1..9999) {
-    	my $roman = encode($i);
-    	my $latin = decode($roman);
-    	die "ERROR: $i -> $roman -> $latin" if $i != $latin;
+	foreach my $i (1..9999) {
+		my $roman = encode($i);
+		my $arabic = decode($roman);
+		die "ERROR: $i -> $roman -> $arabic" if $i != $arabic;
 	}
 	print "Test successful\n";
 }

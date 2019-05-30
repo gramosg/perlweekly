@@ -1,4 +1,10 @@
 #!/usr/bin/env perl
+#
+# Write a script to encode/decode Roman numerals. For example, given Roman
+# numeral CCXLVI, it should return 246. Similarly, for decimal number 39, it
+# should return XXXIX. Checkout wikipedia page for more information.
+# (https://en.wikipedia.org/wiki/Roman_numerals)
+################################################################################
 
 use strict;
 use warnings;

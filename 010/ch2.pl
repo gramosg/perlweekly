@@ -1,4 +1,9 @@
 #!/usr/bin/env perl
+#
+# Write a script to find Jaro-Winkler distance between two strings. For more
+# information check wikipedia page.
+# (https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance)
+################################################################################
 
 use strict;
 use warnings;

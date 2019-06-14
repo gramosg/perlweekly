@@ -32,4 +32,9 @@ sub commonPath {
         : join "/", @common;
 }
 
-print commonPath(@ARGV), "\n";
+# CLI usage
+if (@ARGV) {
+    print commonPath(@ARGV), "\n";
+} else {
+    print "Usage: $0 path1 path2 ...\n";
+}

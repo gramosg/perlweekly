@@ -33,10 +33,12 @@ my $max_len = 0;
 
 # Given a word, return whether it can be composed using state abbreviations
 sub suitable {
-    $_ =~ s/^\s+|\s+$//g; # Trim
+    $_ =~ s/\s+$//g; # Trim
 
     my $len = length $_;
-    return 0 if $len % 2 != 0; # Length must be even
+
+    # Discard shorter words or the ones which have odd number of letters
+    return 0 if $len < $max_len || $len % 2 != 0;
 
     # Iterate word in 2-letter chunks checking they are valid abbreviations
     foreach my $i (0 .. $len/2-1) {

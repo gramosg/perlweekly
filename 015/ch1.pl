@@ -7,8 +7,7 @@
 use strict;
 use warnings;
 
-use List::Util qw<any>;
-use List::Util qw<max>;
+use List::Util qw<any max>;
 
 my $LIMIT = 10;
 

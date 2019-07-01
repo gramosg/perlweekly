@@ -1,9 +1,13 @@
 #!/usr/bin/env perl
+#
+# Write a script that computes the first five perfect numbers. A perfect number
+# is an integer that is the sum of its positive proper divisors (all divisors
+# except itself).
+# (https://en.wikipedia.org/wiki/Perfect_number)
+################################################################################
 
 use strict;
 use warnings;
-
-my @primes;
 
 sub perfect {
     my $sum = 0;

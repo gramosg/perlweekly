@@ -1,4 +1,8 @@
 #!/usr/bin/env perl
+#
+# Write a script that finds the first square number that has at least 5 distinct
+# digits
+################################################################################
 
 use strict;
 use warnings;

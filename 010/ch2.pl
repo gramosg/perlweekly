@@ -42,7 +42,7 @@ sub jaro {
 
     # Count transpositions
     my $t = 0;
-    for my $k (keys %matches) {
+    foreach my $k (keys %matches) {
         $t += 1 if $k != $matches{$k};
     }
 

@@ -51,12 +51,12 @@ sub suitable {
 }
 
 # Read words from $DICTPATH and store suitable ones in @suitable_words
-open(my $dictd, '<', $DICTPATH) or die 'Unable to open dictionary: $!';
+open(my $dictd, '<', $DICTPATH) or die "Unable to open dictionary: $!";
 my @suitable_words = grep suitable, <$dictd>;
 close($dictd);
 
 # Find the longest word(s)...
-for my $word (@suitable_words) {
+foreach my $word (@suitable_words) {
     my $len = length $word;
     if ($len == $max_len) {
         # ... and print their composition (states)

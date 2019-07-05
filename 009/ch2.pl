@@ -54,7 +54,7 @@ my @points = @ARGV;
 my $ranks = rank($rank_type, @points);
 
 # Display rankings
-for my $rank (sort (keys %$ranks)) {
+foreach my $rank (sort (keys %$ranks)) {
     my @positions = @{$ranks->{$rank}};
     print "$rank. @positions\n";
 }

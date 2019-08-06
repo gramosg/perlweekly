@@ -8,8 +8,6 @@
 use strict;
 use warnings;
 
-my $str = shift;
-
 my @chunks;
-push @chunks, $1 while $str =~ /((.)\2*)/g;
+push @chunks, $& while $ARGV[0] =~ /(.)\1*/g;
 print "@chunks\n";

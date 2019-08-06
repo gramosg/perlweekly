@@ -8,6 +8,8 @@
 use strict;
 use warnings;
 
-use 5.13.2;
+my $str = shift;
 
-print substr(shift =~ s/((.)\g2*)/$1 /gr, 0, -1), "\n";
+my @chunks;
+push @chunks, $1 while ($str =~ /\G((.)\2*)/g);
+print "@chunks\n";

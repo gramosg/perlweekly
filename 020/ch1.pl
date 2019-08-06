@@ -11,5 +11,5 @@ use warnings;
 my $str = shift;
 
 my @chunks;
-push @chunks, $1 while ($str =~ /\G((.)\2*)/g);
+push @chunks, $1 while $str =~ /((.)\2*)/g;
 print "@chunks\n";

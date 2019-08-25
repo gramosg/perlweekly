@@ -32,7 +32,7 @@ sub bimap_extend {
 sub bimap_insert {
     my ($dict, $sym) = @_;
     my ($sym2bin, $bin2sym) = @$dict{'sym2bin', 'bin2sym'};
-    die "Symbol '$sym' already in dict" if exists $dict->{sym2bin}{$sym};
+    return $dict->{sym2bin}{$sym} if exists $dict->{sym2bin}{$sym};
     my $ord = keys %{$dict->{sym2bin}}; # Ordinal of symbol to insert in decimal
     my $bin = sprintf "%b", $ord; # ... and in binary (string of 1/0s)
     return unless length $bin <= $MAX_BIT_WIDTH;
@@ -51,66 +51,73 @@ sub bimap_insert {
 my $DEFAULT_DICT = bimap_new();
 my $STOP = '';
 bimap_insert($DEFAULT_DICT, $_) foreach (map(chr, 1..254), $STOP);
-sub dict_print {
-    my $bin2sym = shift()->{bin2sym};
-    foreach my $bin (sort keys %$bin2sym) {
-        printf "%s -> %s\n", $bin2sym->{$bin}, $bin;
-    }
+
+sub binary_encode {
+    my $text = shift;
+    my $binary = pack("B*", $text);
+    return $binary;
+}
+
+sub binary_decode {
+    my $binary = shift;
+    my $text = unpack("B*", $binary);
+    return $text
 }
 
 sub lzw_encode {
+    my $dict = shift;
     my $input = shift;
-    my %dict = %$DEFAULT_DICT;
-    my ($sym2bin, $bin2sym) = @dict{'sym2bin', 'bin2sym'};
+    my ($sym2bin, $bin2sym) = @{$dict}{'sym2bin', 'bin2sym'};
 
     my $out = '';
-    while ($input) {
-        # Find largest match in dictionary
-        foreach my $sym (sort { length $b cmp length $a } keys %$sym2bin) {
-            if (rindex($input, $sym, 0) == 0) {
-                # Attach the binary corresponding to the matching symbol
-                $out .= $sym2bin->{$sym};
-                # ... and cut the symbol from the input text
-                $input = substr($input, length $sym);
-                if ($input) {
-                    # New dict entry ($sym + next character)
-                    bimap_insert(\%dict, $sym . substr($input, 0, 1));
-                } else {
-                    # No next character: insert EOM marker and we're finished
-                    $out .= $sym2bin->{$STOP};
-                }
-                last;
-            }
+    my $w = '';
+    foreach my $i (0 .. length($input)-1) {
+        my $char = substr($input, $i, 1);
+        my $dict_seq = $w . $char;
+        unless (exists $sym2bin->{$dict_seq}) {
+            $out .= $sym2bin->{$w};
+            bimap_insert($dict, $dict_seq);
+            $w = '';
         }
+        $w .= $char;
     }
-    return $out;
+    $out .= $sym2bin->{$w} . $sym2bin->{$STOP};
+    return binary_encode($out);
 }
 
 sub lzw_decode {
-    my $input = shift;
-    my %dict = %$DEFAULT_DICT;
-    my ($sym2bin, $bin2sym) = @dict{'sym2bin', 'bin2sym'};
+    my $dict = shift;
+    my $input = binary_decode(shift());
+    my ($sym2bin, $bin2sym) = @{$dict}{'sym2bin', 'bin2sym'};
 
     my $out = '';
     my $lastsym;
     while ($input) {
+        my $sym;
         foreach my $bin (keys %$bin2sym) {
             if ($input =~ /^$bin/) {
-                my $sym = $bin2sym->{$bin};
-                $out .= $sym;
-                $input = substr($input, length $bin);
-                last if $sym eq $STOP;
-                if (defined $lastsym) {
-                    my $bin = bimap_insert(\%dict, $lastsym . substr($sym, 0, 1));
-                    bimap_extend(\%dict, $dict{binwidth}+1)
-                        if $bin =~ /^1+$/;
-                }
-                $lastsym = $sym;
+                $sym = $bin2sym->{$bin};
+                $input = substr($input, $dict->{binwidth});
                 last;
             }
         }
+        unless (defined $sym) {
+            $sym = $lastsym . substr($lastsym, 0, 1);
+            $input = substr($input, $dict->{binwidth});
+        }
+        $out .= $sym;
+        if ($sym eq $STOP) {
+            return $out;
+        }
+        return $out if $sym eq $STOP;
+        if (defined $lastsym) {
+            my $bin = bimap_insert($dict, $lastsym . $sym);
+            if ((log($dict->{binwidth}) / log(2)) =~ /^\d+$/) {
+                bimap_extend($dict, $dict->{binwidth}+1);
+            }
+        }
+        $lastsym = $sym;
     }
-    return $out;
 }
 
 sub usage {
@@ -118,14 +125,14 @@ sub usage {
 }
 my $mode = shift || usage;
 if ($mode eq '-e' || $mode eq '--encode') {
-    my $input = <>;
-    my $out = lzw_encode($input);
-    my $comprate = 100 * length($out) / (8 * length($input));
+    my $input = join "", <>;
+    my $out = lzw_encode($DEFAULT_DICT, $input);
+    my $comprate = 100 * length($out) / length($input);
     printf STDERR "Compressed to %.2f%% of original size\n", $comprate;
     print $out;
 } elsif ($mode eq '-d' || $mode eq '--decode') {
-    my $input = <>;
-    my $out = lzw_decode($input);
+    my $input = join "", <>;
+    my $out = lzw_decode($DEFAULT_DICT, $input);
     print $out;
 } else {
     usage;

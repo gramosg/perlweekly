@@ -38,8 +38,8 @@ sub decode_octet {
 # Decoding percent-encoded octets of unreserved characters
 $url =~ s<%[a-zA-Z0-9]{2}>< decode_octet($&) >ge;
 
-my ($scheme, $host, $port, $path) = $url =~
-    m<^$scheme_re://$host_re$port_re$rest_re>;
+my ($scheme, $host, $port, $rest) = $url =~
+    m<^$scheme_re://$host_re$port_re$rest_re$>;
 
 die "Unable to decode URI" unless $scheme and $host;
 
@@ -55,8 +55,8 @@ if (!$port || $scheme eq 'http' && $port == 80 || $scheme eq 'https' && $port ==
 }
 
 # Removing dot-segments
-$path =~ s</\./|/\.$></>g; # Remove all '.'
-$path =~ s</[^/]+/\.\.><>g; # Remove instances of the pattern: '/x/..'
-$path =~ s<(\.\./)+><>g; # Remove all '..'s left at the beginning
+$rest =~ s</\./|/\.$></>g; # Remove all '.'
+$rest =~ s</[^/]+/\.\.><>g; # Remove instances of the pattern: '/x/..'
+$rest =~ s<(\.\./)+><>g; # Remove all '..'s left at the beginning
 
-print "$scheme://$host$port$path\n";
+print "$scheme://$host$port$rest\n";

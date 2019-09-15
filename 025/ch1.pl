@@ -54,4 +54,4 @@ sub longest {
     return @longest_path;
 }
 
-print longest(@POKEMON);
+longest(@POKEMON);
